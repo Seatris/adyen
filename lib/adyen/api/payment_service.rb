@@ -19,12 +19,8 @@ module Adyen
     #      :currency => 'EUR',
     #      :value => invoice.amount,
     #    },
-    #    :shopper => {
-    #      :email => user.email,
-    #      :reference => user.id,
-    #      :ip => request.ip,
-    #      :statement => 'Invoice number 123456'
-    #    },
+    #    :shopperEmail => user.email,
+    #    :shopperReference => user.id,
     #    :card => {
     #      :expiry_month => 12,
     #      :expiry_year => 2012,
@@ -89,21 +85,22 @@ module Adyen
       def authorise_payment_request_body
         content = card_partial
         if @params[:recurring]
-          validate_parameters!(:shopper => [:email, :reference])
+          validate_parameters!(:shopperEmail, :shopperReference)
           content << ENABLE_RECURRING_CONTRACTS_PARTIAL
         end
         payment_request_body(content)
       end
 
       def authorise_recurring_payment_request_body
-        validate_parameters!(:shopper => [:email, :reference])
+        validate_parameters!(:shopperEmail, :shopperReference)
         content = RECURRING_PAYMENT_BODY_PARTIAL % (@params[:recurring_detail_reference] || 'LATEST')
         payment_request_body(content)
       end
 
       def authorise_one_click_payment_request_body
         validate_parameters!(:recurring_detail_reference,
-                             :shopper => [:email, :reference])
+                             :shopperEmail,
+                             :shopperReference)
         content = one_click_card_partial
         content << ONE_CLICK_PAYMENT_BODY_PARTIAL % [@params[:recurring_detail_reference]]
         payment_request_body(content)
